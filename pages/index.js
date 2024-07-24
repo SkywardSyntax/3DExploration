@@ -5,7 +5,12 @@ function Home() {
   const [cubes, setCubes] = useState([]);
 
   const addCube = () => {
-    setCubes([...cubes, {}]);
+    const distanceBetweenCubes = 7.0;
+    const startPosition = -(cubes.length) * distanceBetweenCubes / 2;
+    const newCube = {
+      position: [startPosition + cubes.length * distanceBetweenCubes, 0.0, -6.0]
+    };
+    setCubes([...cubes, newCube]);
   };
 
   const removeCube = () => {

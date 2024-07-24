@@ -129,7 +129,7 @@ function drawScene(gl, programInfo, buffers, deltaTime, cubes) {
   cubes.forEach((cube, index) => {
     const modelViewMatrix = mat4.create();
 
-    mat4.translate(modelViewMatrix, modelViewMatrix, [-0.0, 0.0, -6.0 - index * 2]);
+    mat4.translate(modelViewMatrix, modelViewMatrix, cube.position);
     mat4.rotate(modelViewMatrix, modelViewMatrix, cubeRotation, [0, 0, 1]);
     mat4.rotate(modelViewMatrix, modelViewMatrix, cubeRotation * .7, [0, 1, 0]);
 
