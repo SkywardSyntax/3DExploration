@@ -1,10 +1,22 @@
-import React from 'react';
+import React, { useState } from 'react';
 import WebGLRenderer from '../components/WebGLRenderer';
 
 function Home() {
+  const [cubes, setCubes] = useState([]);
+
+  const addCube = () => {
+    setCubes([...cubes, {}]);
+  };
+
+  const removeCube = () => {
+    setCubes(cubes.slice(0, -1));
+  };
+
   return (
     <main>
-      <WebGLRenderer sides={6} />
+      <button onClick={addCube}>Add Cube</button>
+      <button onClick={removeCube}>Remove Cube</button>
+      <WebGLRenderer cubes={cubes} />
     </main>
   );
 }

@@ -47,3 +47,19 @@ input[type="range"]::-moz-range-thumb {
   background: #4CAF50;
   cursor: pointer;
 }
+
+button {
+  display: inline-block;
+  padding: 10px 20px;
+  margin: 10px;
+  font-size: 16px;
+  color: white;
+  background-color: #4CAF50;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #45a049;
+}
