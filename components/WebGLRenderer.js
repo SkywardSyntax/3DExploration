@@ -4,19 +4,32 @@ import { mat4 } from 'gl-matrix';
 const vertexShaderSource = `
   attribute vec4 aVertexPosition;
   attribute vec3 aVertexColor;
+  attribute vec3 aVertexNormal;
   varying lowp vec4 vColor;
+  varying highp vec3 vLighting;
   uniform mat4 uModelViewMatrix;
   uniform mat4 uProjectionMatrix;
+  uniform mat4 uNormalMatrix;
   void main(void) {
     gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
     vColor = vec4(aVertexColor, 1.0);
+
+    highp vec3 ambientLight = vec3(0.3, 0.3, 0.3);
+    highp vec3 directionalLightColor = vec3(1, 1, 1);
+    highp vec3 directionalVector = normalize(vec3(0.85, 0.8, 0.75));
+
+    highp vec4 transformedNormal = uNormalMatrix * vec4(aVertexNormal, 1.0);
+
+    highp float directional = max(dot(transformedNormal.xyz, directionalVector), 0.0);
+    vLighting = ambientLight + (directionalLightColor * directional);
   }
 `;
 
 const fragmentShaderSource = `
   varying lowp vec4 vColor;
+  varying highp vec3 vLighting;
   void main(void) {
-    gl_FragColor = vColor;
+    gl_FragColor = vec4(vColor.rgb * vLighting, vColor.a);
   }
 `;
 
@@ -69,12 +82,12 @@ function initBuffers(gl) {
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
 
   const faceColors = [
-    [0.8, 0.8, 0.8, 1.0],    // Front face: light grey
-    [0.8, 0.8, 0.8, 1.0],    // Back face: light grey
-    [0.8, 0.8, 0.8, 1.0],    // Top face: light grey
-    [0.8, 0.8, 0.8, 1.0],    // Bottom face: light grey
-    [0.8, 0.8, 0.8, 1.0],    // Right face: light grey
-    [0.8, 0.8, 0.8, 1.0],    // Left face: light grey
+    [0.0, 0.0, 0.0, 1.0],    // Front face: black
+    [0.0, 0.0, 0.0, 1.0],    // Back face: black
+    [0.0, 0.0, 0.0, 1.0],    // Top face: black
+    [0.0, 0.0, 0.0, 1.0],    // Bottom face: black
+    [0.0, 0.0, 0.0, 1.0],    // Right face: black
+    [0.0, 0.0, 0.0, 1.0],    // Left face: black
   ];
 
   var colors = [];
@@ -103,14 +116,58 @@ function initBuffers(gl) {
 
   gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
 
+  const normalBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
+
+  const vertexNormals = [
+    // Front
+     0.0,  0.0,  1.0,
+     0.0,  0.0,  1.0,
+     0.0,  0.0,  1.0,
+     0.0,  0.0,  1.0,
+
+    // Back
+     0.0,  0.0, -1.0,
+     0.0,  0.0, -1.0,
+     0.0,  0.0, -1.0,
+     0.0,  0.0, -1.0,
+
+    // Top
+     0.0,  1.0,  0.0,
+     0.0,  1.0,  0.0,
+     0.0,  1.0,  0.0,
+     0.0,  1.0,  0.0,
+
+    // Bottom
+     0.0, -1.0,  0.0,
+     0.0, -1.0,  0.0,
+     0.0, -1.0,  0.0,
+     0.0, -1.0,  0.0,
+
+    // Right
+     1.0,  0.0,  0.0,
+     1.0,  0.0,  0.0,
+     1.0,  0.0,  0.0,
+     1.0,  0.0,  0.0,
+
+    // Left
+    -1.0,  0.0,  0.0,
+    -1.0,  0.0,  0.0,
+    -1.0,  0.0,  0.0,
+    -1.0,  0.0,  0.0
+  ];
+
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexNormals), gl.STATIC_DRAW);
+
   return {
     position: positionBuffer,
     color: colorBuffer,
     indices: indexBuffer,
+    normal: normalBuffer,
   };
 }
 
-function drawScene(gl, programInfo, buffers, deltaTime, cubes) {
+function drawScene(gl, programInfo, buffers, deltaTime) {
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
   gl.clearDepth(1.0);
   gl.enable(gl.DEPTH_TEST);
@@ -126,76 +183,100 @@ function drawScene(gl, programInfo, buffers, deltaTime, cubes) {
 
   mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
 
-  cubes.forEach((cube, index) => {
-    const modelViewMatrix = mat4.create();
+  const modelViewMatrix = mat4.create();
 
-    mat4.translate(modelViewMatrix, modelViewMatrix, cube.position);
-    mat4.rotate(modelViewMatrix, modelViewMatrix, cubeRotation, [0, 0, 1]);
-    mat4.rotate(modelViewMatrix, modelViewMatrix, cubeRotation * .7, [0, 1, 0]);
+  mat4.translate(modelViewMatrix, modelViewMatrix, [-0.0, 0.0, -6.0]);
+  mat4.rotate(modelViewMatrix, modelViewMatrix, cubeRotation, [0, 0, 1]);
+  mat4.rotate(modelViewMatrix, modelViewMatrix, cubeRotation * .7, [0, 1, 0]);
 
-    {
-      const numComponents = 3;
-      const type = gl.FLOAT;
-      const normalize = false;
-      const stride = 0;
-      const offset = 0;
-      gl.bindBuffer(gl.ARRAY_BUFFER, buffers.position);
-      gl.vertexAttribPointer(
-        programInfo.attribLocations.vertexPosition,
-        numComponents,
-        type,
-        normalize,
-        stride,
-        offset);
-      gl.enableVertexAttribArray(
-        programInfo.attribLocations.vertexPosition);
-    }
+  const normalMatrix = mat4.create();
+  mat4.invert(normalMatrix, modelViewMatrix);
+  mat4.transpose(normalMatrix, normalMatrix);
 
-    {
-      const numComponents = 4;
-      const type = gl.FLOAT;
-      const normalize = false;
-      const stride = 0;
-      const offset = 0;
-      gl.bindBuffer(gl.ARRAY_BUFFER, buffers.color);
-      gl.vertexAttribPointer(
-        programInfo.attribLocations.vertexColor,
-        numComponents,
-        type,
-        normalize,
-        stride,
-        offset);
-      gl.enableVertexAttribArray(
-        programInfo.attribLocations.vertexColor);
-    }
+  {
+    const numComponents = 3;
+    const type = gl.FLOAT;
+    const normalize = false;
+    const stride = 0;
+    const offset = 0;
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffers.position);
+    gl.vertexAttribPointer(
+      programInfo.attribLocations.vertexPosition,
+      numComponents,
+      type,
+      normalize,
+      stride,
+      offset);
+    gl.enableVertexAttribArray(
+      programInfo.attribLocations.vertexPosition);
+  }
 
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.indices);
+  {
+    const numComponents = 4;
+    const type = gl.FLOAT;
+    const normalize = false;
+    const stride = 0;
+    const offset = 0;
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffers.color);
+    gl.vertexAttribPointer(
+      programInfo.attribLocations.vertexColor,
+      numComponents,
+      type,
+      normalize,
+      stride,
+      offset);
+    gl.enableVertexAttribArray(
+      programInfo.attribLocations.vertexColor);
+  }
 
-    gl.useProgram(programInfo.program);
+  {
+    const numComponents = 3;
+    const type = gl.FLOAT;
+    const normalize = false;
+    const stride = 0;
+    const offset = 0;
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffers.normal);
+    gl.vertexAttribPointer(
+      programInfo.attribLocations.vertexNormal,
+      numComponents,
+      type,
+      normalize,
+      stride,
+      offset);
+    gl.enableVertexAttribArray(
+      programInfo.attribLocations.vertexNormal);
+  }
 
-    gl.uniformMatrix4fv(
-      programInfo.uniformLocations.projectionMatrix,
-      false,
-      projectionMatrix);
-    gl.uniformMatrix4fv(
-      programInfo.uniformLocations.modelViewMatrix,
-      false,
-      modelViewMatrix);
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.indices);
 
-    {
-      const vertexCount = 36;
-      const type = gl.UNSIGNED_SHORT;
-      const offset = 0;
-      gl.drawElements(gl.TRIANGLES, vertexCount, type, offset);
-    }
-  });
+  gl.useProgram(programInfo.program);
+
+  gl.uniformMatrix4fv(
+    programInfo.uniformLocations.projectionMatrix,
+    false,
+    projectionMatrix);
+  gl.uniformMatrix4fv(
+    programInfo.uniformLocations.modelViewMatrix,
+    false,
+    modelViewMatrix);
+  gl.uniformMatrix4fv(
+    programInfo.uniformLocations.normalMatrix,
+    false,
+    normalMatrix);
+
+  {
+    const vertexCount = 36;
+    const type = gl.UNSIGNED_SHORT;
+    const offset = 0;
+    gl.drawElements(gl.TRIANGLES, vertexCount, type, offset);
+  }
 
   cubeRotation += deltaTime;
 }
 
 let cubeRotation = 0.0;
 
-function WebGLRenderer({ cubes }) {
+function WebGLRenderer() {
   const canvasRef = useRef(null);
 
   useEffect(() => {
@@ -214,10 +295,12 @@ function WebGLRenderer({ cubes }) {
       attribLocations: {
         vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
         vertexColor: gl.getAttribLocation(shaderProgram, 'aVertexColor'),
+        vertexNormal: gl.getAttribLocation(shaderProgram, 'aVertexNormal'),
       },
       uniformLocations: {
         projectionMatrix: gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
         modelViewMatrix: gl.getUniformLocation(shaderProgram, 'uModelViewMatrix'),
+        normalMatrix: gl.getUniformLocation(shaderProgram, 'uNormalMatrix'),
       },
     };
 
@@ -230,12 +313,12 @@ function WebGLRenderer({ cubes }) {
       const deltaTime = now - then;
       then = now;
 
-      drawScene(gl, programInfo, buffers, deltaTime, cubes);
+      drawScene(gl, programInfo, buffers, deltaTime);
 
       requestAnimationFrame(render);
     }
     requestAnimationFrame(render);
-  }, [cubes]);
+  }, []);
 
   return <canvas ref={canvasRef} width="640" height="480" />;
 }
