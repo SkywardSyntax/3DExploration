@@ -11,4 +11,10 @@ body {
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   hyphens: auto;
+  background-color: black;
+}
+
+canvas {
+  display: block;
+  margin: 0 auto;
 }
