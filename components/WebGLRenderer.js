@@ -47,61 +47,34 @@ function loadShader(gl, type, source) {
   return shader;
 }
 
-function initBuffers(gl, shape) {
+function generatePolygonVertices(sides, radius = 1.0) {
+  const vertices = [];
+  const angleStep = (2 * Math.PI) / sides;
+
+  for (let i = 0; i < sides; i++) {
+    const angle = i * angleStep;
+    vertices.push(radius * Math.cos(angle), radius * Math.sin(angle), 0.0);
+  }
+
+  return vertices;
+}
+
+function generatePolygonIndices(sides) {
+  const indices = [];
+
+  for (let i = 1; i < sides - 1; i++) {
+    indices.push(0, i, i + 1);
+  }
+
+  return indices;
+}
+
+function initBuffers(gl, sides) {
   const positionBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
 
-  let positions;
-  let indices;
-
-  switch (shape) {
-    case 'cube':
-      positions = [
-        -1.0, -1.0,  1.0,
-         1.0, -1.0,  1.0,
-         1.0,  1.0,  1.0,
-        -1.0,  1.0,  1.0,
-        -1.0, -1.0, -1.0,
-         1.0, -1.0, -1.0,
-         1.0,  1.0, -1.0,
-        -1.0,  1.0, -1.0,
-      ];
-
-      indices = [
-        0, 1, 2, 0, 2, 3,
-        4, 5, 6, 4, 6, 7,
-        0, 1, 5, 0, 5, 4,
-        1, 2, 6, 1, 6, 5,
-        2, 3, 7, 2, 7, 6,
-        3, 0, 4, 3, 4, 7,
-      ];
-      break;
-    case 'pyramid':
-      positions = [
-        0.0,  1.0,  0.0,
-       -1.0, -1.0,  1.0,
-        1.0, -1.0,  1.0,
-        1.0, -1.0, -1.0,
-       -1.0, -1.0, -1.0,
-      ];
-
-      indices = [
-        0, 1, 2,
-        0, 2, 3,
-        0, 3, 4,
-        0, 4, 1,
-        1, 2, 3, 1, 3, 4,
-      ];
-      break;
-    case 'dodecahedron':
-      // Placeholder for dodecahedron vertices and indices
-      positions = [];
-      indices = [];
-      break;
-    default:
-      console.error('Unknown shape: ' + shape);
-      return null;
-  }
+  const positions = generatePolygonVertices(sides);
+  const indices = generatePolygonIndices(sides);
 
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
 
@@ -115,7 +88,7 @@ function initBuffers(gl, shape) {
   };
 }
 
-function drawScene(gl, programInfo, buffers, deltaTime) {
+function drawScene(gl, programInfo, buffers, sides, deltaTime) {
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
   gl.clearDepth(1.0);
   gl.enable(gl.DEPTH_TEST);
@@ -169,7 +142,7 @@ function drawScene(gl, programInfo, buffers, deltaTime) {
     modelViewMatrix);
 
   {
-    const vertexCount = 36;
+    const vertexCount = (sides - 2) * 3;
     const type = gl.UNSIGNED_SHORT;
     const offset = 0;
     gl.drawElements(gl.TRIANGLES, vertexCount, type, offset);
@@ -180,7 +153,7 @@ function drawScene(gl, programInfo, buffers, deltaTime) {
 
 let cubeRotation = 0.0;
 
-function WebGLRenderer({ shape = 'cube' }) {
+function WebGLRenderer({ sides = 4 }) {
   const canvasRef = useRef(null);
 
   useEffect(() => {
@@ -205,7 +178,7 @@ function WebGLRenderer({ shape = 'cube' }) {
       },
     };
 
-    const buffers = initBuffers(gl, shape);
+    const buffers = initBuffers(gl, sides);
 
     let then = 0;
 
@@ -214,12 +187,12 @@ function WebGLRenderer({ shape = 'cube' }) {
       const deltaTime = now - then;
       then = now;
 
-      drawScene(gl, programInfo, buffers, deltaTime);
+      drawScene(gl, programInfo, buffers, sides, deltaTime);
 
       requestAnimationFrame(render);
     }
     requestAnimationFrame(render);
-  }, [shape]);
+  }, [sides]);
 
   return <canvas ref={canvasRef} width="640" height="480" />;
 }
