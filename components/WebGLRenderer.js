@@ -306,7 +306,7 @@ function WebGLRenderer() {
     requestAnimationFrame(render);
   }, []);
 
-  return <canvas ref={canvasRef} width="640" height="480" />;
+  return <canvas ref={canvasRef} width="640" height="480" style={{ display: 'block', margin: 'auto', position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }} />;
 }
 
 export default WebGLRenderer;
