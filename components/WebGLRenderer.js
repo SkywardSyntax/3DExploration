@@ -38,6 +38,40 @@ const fragmentShaderSource = `
   }
 `;
 
+const particleVertexShaderSource = `
+  attribute vec4 aParticlePosition;
+  attribute vec3 aParticleColor;
+  varying lowp vec4 vParticleColor;
+  uniform mat4 uModelViewMatrix;
+  uniform mat4 uProjectionMatrix;
+  void main(void) {
+    gl_Position = uProjectionMatrix * uModelViewMatrix * aParticlePosition;
+    vParticleColor = vec4(aParticleColor, 1.0);
+  }
+`;
+
+const particleFragmentShaderSource = `
+  varying lowp vec4 vParticleColor;
+  void main(void) {
+    gl_FragColor = vParticleColor;
+  }
+`;
+
+const shadowVertexShaderSource = `
+  attribute vec4 aVertexPosition;
+  uniform mat4 uModelViewMatrix;
+  uniform mat4 uProjectionMatrix;
+  void main(void) {
+    gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
+  }
+`;
+
+const shadowFragmentShaderSource = `
+  void main(void) {
+    gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+  }
+`;
+
 function initShaderProgram(gl, vsSource, fsSource) {
   const vertexShader = loadShader(gl, gl.VERTEX_SHADER, vsSource);
   const fragmentShader = loadShader(gl, gl.FRAGMENT_SHADER, fsSource);
@@ -162,12 +196,38 @@ function initBuffers(gl) {
 
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexNormals), gl.STATIC_DRAW);
 
+  const particlePositionBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, particlePositionBuffer);
+
+  const particlePositions = [];
+  for (let i = 0; i < 1000; i++) {
+    particlePositions.push(Math.random() * 2 - 1);
+    particlePositions.push(Math.random() * 2 - 1);
+    particlePositions.push(Math.random() * 2 - 1);
+  }
+
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(particlePositions), gl.STATIC_DRAW);
+
+  const particleColorBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, particleColorBuffer);
+
+  const particleColors = [];
+  for (let i = 0; i < 1000; i++) {
+    particleColors.push(Math.random());
+    particleColors.push(Math.random());
+    particleColors.push(Math.random());
+  }
+
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(particleColors), gl.STATIC_DRAW);
+
   return {
     position: positionBuffer,
     color: colorBuffer,
     roughness: roughnessBuffer,
     indices: indexBuffer,
     normal: normalBuffer,
+    particlePosition: particlePositionBuffer,
+    particleColor: particleColorBuffer,
   };
 }
 
@@ -293,6 +353,60 @@ function drawScene(gl, programInfo, buffers, deltaTime) {
     gl.drawElements(gl.TRIANGLES, vertexCount, type, offset);
   }
 
+  {
+    const numComponents = 3;
+    const type = gl.FLOAT;
+    const normalize = false;
+    const stride = 0;
+    const offset = 0;
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffers.particlePosition);
+    gl.vertexAttribPointer(
+      programInfo.attribLocations.particlePosition,
+      numComponents,
+      type,
+      normalize,
+      stride,
+      offset);
+    gl.enableVertexAttribArray(
+      programInfo.attribLocations.particlePosition);
+  }
+
+  {
+    const numComponents = 3;
+    const type = gl.FLOAT;
+    const normalize = false;
+    const stride = 0;
+    const offset = 0;
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffers.particleColor);
+    gl.vertexAttribPointer(
+      programInfo.attribLocations.particleColor,
+      numComponents,
+      type,
+      normalize,
+      stride,
+      offset);
+    gl.enableVertexAttribArray(
+      programInfo.attribLocations.particleColor);
+  }
+
+  gl.useProgram(programInfo.particleProgram);
+
+  gl.uniformMatrix4fv(
+    programInfo.uniformLocations.projectionMatrix,
+    false,
+    projectionMatrix);
+  gl.uniformMatrix4fv(
+    programInfo.uniformLocations.modelViewMatrix,
+    false,
+    modelViewMatrix);
+
+  {
+    const vertexCount = 1000;
+    const type = gl.UNSIGNED_SHORT;
+    const offset = 0;
+    gl.drawArrays(gl.POINTS, 0, vertexCount);
+  }
+
   pyramidRotation += deltaTime;
 }
 
@@ -311,14 +425,20 @@ function WebGLRenderer() {
     }
 
     const shaderProgram = initShaderProgram(gl, vertexShaderSource, fragmentShaderSource);
+    const particleShaderProgram = initShaderProgram(gl, particleVertexShaderSource, particleFragmentShaderSource);
+    const shadowShaderProgram = initShaderProgram(gl, shadowVertexShaderSource, shadowFragmentShaderSource);
 
     const programInfo = {
       program: shaderProgram,
+      particleProgram: particleShaderProgram,
+      shadowProgram: shadowShaderProgram,
       attribLocations: {
         vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
         vertexColor: gl.getAttribLocation(shaderProgram, 'aVertexColor'),
         vertexNormal: gl.getAttribLocation(shaderProgram, 'aVertexNormal'),
         vertexRoughness: gl.getAttribLocation(shaderProgram, 'aVertexRoughness'),
+        particlePosition: gl.getAttribLocation(particleShaderProgram, 'aParticlePosition'),
+        particleColor: gl.getAttribLocation(particleShaderProgram, 'aParticleColor'),
       },
       uniformLocations: {
         projectionMatrix: gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),

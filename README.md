@@ -13,6 +13,10 @@ The rendering algorithm in `components/WebGLRenderer.js` has been updated to inc
 - Implemented bump mapping in vertex and fragment shaders.
 - Utilized retracting for dynamic vertex positions.
 - Modified procedural vertex normal calculations for roughness.
+- Added more complex shaders to increase GPU load.
+- Introduced particle systems to increase GPU load.
+- Increased resolution and complexity of object textures.
+- Utilized shadow mapping or environment mapping to increase GPU load.
 
 ## Bump Mapping and Roughness
 
