@@ -5,14 +5,17 @@ const vertexShaderSource = `
   attribute vec4 aVertexPosition;
   attribute vec3 aVertexColor;
   attribute vec3 aVertexNormal;
+  attribute float aVertexRoughness;
   varying lowp vec4 vColor;
   varying highp vec3 vLighting;
+  varying highp float vRoughness;
   uniform mat4 uModelViewMatrix;
   uniform mat4 uProjectionMatrix;
   uniform mat4 uNormalMatrix;
   void main(void) {
     gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
     vColor = vec4(aVertexColor, 1.0);
+    vRoughness = aVertexRoughness;
 
     highp vec3 ambientLight = vec3(0.3, 0.3, 0.3);
     highp vec3 directionalLightColor = vec3(1, 1, 1);
@@ -28,8 +31,10 @@ const vertexShaderSource = `
 const fragmentShaderSource = `
   varying lowp vec4 vColor;
   varying highp vec3 vLighting;
+  varying highp float vRoughness;
   void main(void) {
-    gl_FragColor = vec4(vColor.rgb * vLighting, vColor.a);
+    highp vec3 roughnessFactor = vec3(1.0 - vRoughness);
+    gl_FragColor = vec4(vColor.rgb * vLighting * roughnessFactor, vColor.a);
   }
 `;
 
@@ -98,6 +103,18 @@ function initBuffers(gl) {
   gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
 
+  const roughnessValues = [
+    0.1, 0.1, 0.1,  // Top vertex
+    0.5, 0.5, 0.5,  // Front-left vertex
+    0.5, 0.5, 0.5,  // Front-right vertex
+    0.8, 0.8, 0.8,  // Back-right vertex
+    0.8, 0.8, 0.8,  // Back-left vertex
+  ];
+
+  const roughnessBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, roughnessBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(roughnessValues), gl.STATIC_DRAW);
+
   const indexBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
 
@@ -148,6 +165,7 @@ function initBuffers(gl) {
   return {
     position: positionBuffer,
     color: colorBuffer,
+    roughness: roughnessBuffer,
     indices: indexBuffer,
     normal: normalBuffer,
   };
@@ -233,6 +251,24 @@ function drawScene(gl, programInfo, buffers, deltaTime) {
       programInfo.attribLocations.vertexNormal);
   }
 
+  {
+    const numComponents = 1;
+    const type = gl.FLOAT;
+    const normalize = false;
+    const stride = 0;
+    const offset = 0;
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffers.roughness);
+    gl.vertexAttribPointer(
+      programInfo.attribLocations.vertexRoughness,
+      numComponents,
+      type,
+      normalize,
+      stride,
+      offset);
+    gl.enableVertexAttribArray(
+      programInfo.attribLocations.vertexRoughness);
+  }
+
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.indices);
 
   gl.useProgram(programInfo.program);
@@ -282,6 +318,7 @@ function WebGLRenderer() {
         vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
         vertexColor: gl.getAttribLocation(shaderProgram, 'aVertexColor'),
         vertexNormal: gl.getAttribLocation(shaderProgram, 'aVertexNormal'),
+        vertexRoughness: gl.getAttribLocation(shaderProgram, 'aVertexRoughness'),
       },
       uniformLocations: {
         projectionMatrix: gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
