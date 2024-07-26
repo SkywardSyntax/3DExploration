@@ -5,18 +5,26 @@ import Slider from './Slider';
 
 const vertexShader = `
   varying vec3 vNormal;
+  varying vec3 vViewPosition;
   void main() {
     vNormal = normalize(normalMatrix * normal);
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+    vViewPosition = -mvPosition.xyz;
+    gl_Position = projectionMatrix * mvPosition;
   }
 `;
 
 const fragmentShader = `
   uniform vec3 color;
+  uniform vec3 lightPosition;
   varying vec3 vNormal;
+  varying vec3 vViewPosition;
   void main() {
-    float intensity = pow(0.9 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 2.0);
-    gl_FragColor = vec4(color * intensity, 1.0);
+    vec3 lightDirection = normalize(lightPosition - vViewPosition);
+    float intensity = max(dot(vNormal, lightDirection), 0.0);
+    vec3 reflection = reflect(-lightDirection, vNormal);
+    float specular = pow(max(dot(reflection, normalize(vViewPosition)), 0.0), 16.0);
+    gl_FragColor = vec4(color * intensity + vec3(1.0) * specular, 1.0);
   }
 `;
 
@@ -40,7 +48,8 @@ function WebGLRenderer() {
       vertexShader,
       fragmentShader,
       uniforms: {
-        color: { value: new THREE.Color(0xd3d3d3) }
+        color: { value: new THREE.Color(0xd3d3d3) },
+        lightPosition: { value: new THREE.Vector3(5, 5, 5) }
       }
     });
     const sphere = new THREE.Mesh(geometry, material);

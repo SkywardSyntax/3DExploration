@@ -54,9 +54,24 @@ The custom shaders provide the following effects and benefits:
 - Improved color effects: The shaders allow for more sophisticated color manipulation, resulting in more vibrant and visually appealing objects.
 - Greater control over rendering: The use of custom shaders provides greater control over the rendering process, allowing for more fine-tuned and customized visual effects.
 
-### Running the Application with Sophisticated Shaders
+### Advanced Lighting and Reflection Effects
 
-To run the application with the new sophisticated shaders, use the following command:
+The updated shaders now include advanced lighting and reflection calculations for enhanced realism. The following changes have been made:
+
+- Updated `components/Cube.js` to use more complex vertex and fragment shaders with advanced lighting and reflection calculations.
+- Updated `components/WebGLRenderer.js` to use more complex vertex and fragment shaders for the sphere with advanced lighting and reflection calculations.
+
+### Detailed Explanation of the New Shader Effects
+
+The new shader effects include the following advanced features:
+
+- **Advanced Lighting Calculations**: The vertex shaders now include more complex lighting calculations, taking into account multiple light sources and their interactions with the objects' surfaces. This results in more realistic and dynamic lighting effects.
+- **Reflection Calculations**: The fragment shaders now include advanced reflection calculations, simulating the way light reflects off the surfaces of the objects. This adds a layer of realism to the rendering, making the objects appear more lifelike.
+- **Specular Highlights**: The shaders now include calculations for specular highlights, which are the bright spots of light that appear on shiny surfaces. This enhances the visual appeal of the objects, making them look more polished and realistic.
+
+### Running the Application with Advanced Shader Effects
+
+To run the application with the new advanced shader effects, use the following command:
 
 ```
 npm run dev
