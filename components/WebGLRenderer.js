@@ -6,9 +6,16 @@ const vertexShaderSource = `
   attribute vec3 aVertexColor;
   attribute vec3 aVertexNormal;
   attribute float aVertexRoughness;
+  attribute vec3 aVertexTangent;
+  attribute vec3 aVertexBitangent;
+  attribute vec2 aTextureCoord;
   varying lowp vec4 vColor;
   varying highp vec3 vLighting;
   varying highp float vRoughness;
+  varying highp vec2 vTextureCoord;
+  varying highp vec3 vTangent;
+  varying highp vec3 vBitangent;
+  varying highp vec3 vNormal;
   uniform mat4 uModelViewMatrix;
   uniform mat4 uProjectionMatrix;
   uniform mat4 uNormalMatrix;
@@ -16,6 +23,10 @@ const vertexShaderSource = `
     gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
     vColor = vec4(aVertexColor, 1.0);
     vRoughness = aVertexRoughness;
+    vTextureCoord = aTextureCoord;
+    vTangent = aVertexTangent;
+    vBitangent = aVertexBitangent;
+    vNormal = mat3(uNormalMatrix) * aVertexNormal;
 
     highp vec3 ambientLight = vec3(0.3, 0.3, 0.3);
     highp vec3 directionalLightColor = vec3(1, 1, 1);
@@ -32,9 +43,23 @@ const fragmentShaderSource = `
   varying lowp vec4 vColor;
   varying highp vec3 vLighting;
   varying highp float vRoughness;
+  varying highp vec2 vTextureCoord;
+  varying highp vec3 vTangent;
+  varying highp vec3 vBitangent;
+  varying highp vec3 vNormal;
+  uniform sampler2D uBumpMap;
   void main(void) {
+    highp vec3 bumpMapNormal = texture2D(uBumpMap, vTextureCoord).rgb;
+    bumpMapNormal = bumpMapNormal * 2.0 - 1.0;
+    highp mat3 TBN = mat3(vTangent, vBitangent, vNormal);
+    highp vec3 newNormal = normalize(TBN * bumpMapNormal);
+
     highp vec3 roughnessFactor = vec3(1.0 - vRoughness);
-    gl_FragColor = vec4(vColor.rgb * vLighting * roughnessFactor, vColor.a);
+    highp vec3 lighting = vLighting * roughnessFactor;
+    highp float directional = max(dot(newNormal, vec3(0.85, 0.8, 0.75)), 0.0);
+    lighting += directional;
+
+    gl_FragColor = vec4(vColor.rgb * lighting, vColor.a);
   }
 `;
 
@@ -196,6 +221,105 @@ function initBuffers(gl) {
 
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexNormals), gl.STATIC_DRAW);
 
+  const tangentBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, tangentBuffer);
+
+  const vertexTangents = [
+    // Front
+     1.0,  0.0,  0.0,
+     1.0,  0.0,  0.0,
+     1.0,  0.0,  0.0,
+
+    // Right
+     0.0,  0.0, -1.0,
+     0.0,  0.0, -1.0,
+     0.0,  0.0, -1.0,
+
+    // Back
+    -1.0,  0.0,  0.0,
+    -1.0,  0.0,  0.0,
+    -1.0,  0.0,  0.0,
+
+    // Left
+     0.0,  0.0,  1.0,
+     0.0,  0.0,  1.0,
+     0.0,  0.0,  1.0,
+
+    // Bottom
+     1.0,  0.0,  0.0,
+     1.0,  0.0,  0.0,
+     1.0,  0.0,  0.0,
+     1.0,  0.0,  0.0,
+  ];
+
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexTangents), gl.STATIC_DRAW);
+
+  const bitangentBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, bitangentBuffer);
+
+  const vertexBitangents = [
+    // Front
+     0.0,  1.0,  0.0,
+     0.0,  1.0,  0.0,
+     0.0,  1.0,  0.0,
+
+    // Right
+     0.0,  1.0,  0.0,
+     0.0,  1.0,  0.0,
+     0.0,  1.0,  0.0,
+
+    // Back
+     0.0,  1.0,  0.0,
+     0.0,  1.0,  0.0,
+     0.0,  1.0,  0.0,
+
+    // Left
+     0.0,  1.0,  0.0,
+     0.0,  1.0,  0.0,
+     0.0,  1.0,  0.0,
+
+    // Bottom
+     0.0,  0.0, -1.0,
+     0.0,  0.0, -1.0,
+     0.0,  0.0, -1.0,
+     0.0,  0.0, -1.0,
+  ];
+
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexBitangents), gl.STATIC_DRAW);
+
+  const textureCoordBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, textureCoordBuffer);
+
+  const textureCoordinates = [
+    // Front
+    0.0,  0.0,
+    1.0,  0.0,
+    0.5,  1.0,
+
+    // Right
+    0.0,  0.0,
+    1.0,  0.0,
+    0.5,  1.0,
+
+    // Back
+    0.0,  0.0,
+    1.0,  0.0,
+    0.5,  1.0,
+
+    // Left
+    0.0,  0.0,
+    1.0,  0.0,
+    0.5,  1.0,
+
+    // Bottom
+    0.0,  0.0,
+    1.0,  0.0,
+    0.5,  1.0,
+    0.5,  1.0,
+  ];
+
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoordinates), gl.STATIC_DRAW);
+
   const particlePositionBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, particlePositionBuffer);
 
@@ -226,6 +350,9 @@ function initBuffers(gl) {
     roughness: roughnessBuffer,
     indices: indexBuffer,
     normal: normalBuffer,
+    tangent: tangentBuffer,
+    bitangent: bitangentBuffer,
+    textureCoord: textureCoordBuffer,
     particlePosition: particlePositionBuffer,
     particleColor: particleColorBuffer,
   };
@@ -327,6 +454,60 @@ function drawScene(gl, programInfo, buffers, deltaTime) {
       offset);
     gl.enableVertexAttribArray(
       programInfo.attribLocations.vertexRoughness);
+  }
+
+  {
+    const numComponents = 3;
+    const type = gl.FLOAT;
+    const normalize = false;
+    const stride = 0;
+    const offset = 0;
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffers.tangent);
+    gl.vertexAttribPointer(
+      programInfo.attribLocations.vertexTangent,
+      numComponents,
+      type,
+      normalize,
+      stride,
+      offset);
+    gl.enableVertexAttribArray(
+      programInfo.attribLocations.vertexTangent);
+  }
+
+  {
+    const numComponents = 3;
+    const type = gl.FLOAT;
+    const normalize = false;
+    const stride = 0;
+    const offset = 0;
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffers.bitangent);
+    gl.vertexAttribPointer(
+      programInfo.attribLocations.vertexBitangent,
+      numComponents,
+      type,
+      normalize,
+      stride,
+      offset);
+    gl.enableVertexAttribArray(
+      programInfo.attribLocations.vertexBitangent);
+  }
+
+  {
+    const numComponents = 2;
+    const type = gl.FLOAT;
+    const normalize = false;
+    const stride = 0;
+    const offset = 0;
+    gl.bindBuffer(gl.ARRAY_BUFFER, buffers.textureCoord);
+    gl.vertexAttribPointer(
+      programInfo.attribLocations.textureCoord,
+      numComponents,
+      type,
+      normalize,
+      stride,
+      offset);
+    gl.enableVertexAttribArray(
+      programInfo.attribLocations.textureCoord);
   }
 
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, buffers.indices);
@@ -437,6 +618,9 @@ function WebGLRenderer() {
         vertexColor: gl.getAttribLocation(shaderProgram, 'aVertexColor'),
         vertexNormal: gl.getAttribLocation(shaderProgram, 'aVertexNormal'),
         vertexRoughness: gl.getAttribLocation(shaderProgram, 'aVertexRoughness'),
+        vertexTangent: gl.getAttribLocation(shaderProgram, 'aVertexTangent'),
+        vertexBitangent: gl.getAttribLocation(shaderProgram, 'aVertexBitangent'),
+        textureCoord: gl.getAttribLocation(shaderProgram, 'aTextureCoord'),
         particlePosition: gl.getAttribLocation(particleShaderProgram, 'aParticlePosition'),
         particleColor: gl.getAttribLocation(particleShaderProgram, 'aParticleColor'),
       },
@@ -444,6 +628,7 @@ function WebGLRenderer() {
         projectionMatrix: gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
         modelViewMatrix: gl.getUniformLocation(shaderProgram, 'uModelViewMatrix'),
         normalMatrix: gl.getUniformLocation(shaderProgram, 'uNormalMatrix'),
+        bumpMap: gl.getUniformLocation(shaderProgram, 'uBumpMap'),
       },
     };
 

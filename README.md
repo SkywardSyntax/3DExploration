@@ -22,6 +22,14 @@ The rendering algorithm in `components/WebGLRenderer.js` has been updated to inc
 
 Bump mapping has been added to the vertex and fragment shaders to create more realistic surface details. This technique simulates small-scale bumps and wrinkles on the surface of the pyramid, giving it a rough appearance.
 
+### Bump Mapping Techniques
+
+Bump mapping is a technique used to simulate bumps and wrinkles on the surface of an object. It uses a texture (bump map) to perturb the surface normals of the object, creating the illusion of depth and detail. The bump map is a grayscale image where the intensity of each pixel represents the height of the bump at that point.
+
+### Normal Mapping Techniques
+
+Normal mapping is a more advanced technique that uses a texture (normal map) to store normal vectors instead of height values. This allows for more detailed and accurate surface details. The normal map is usually created from a high-resolution model and applied to a low-resolution model to give the appearance of high detail without the computational cost.
+
 ## Instructions for Running the Updated Code
 
 To run this application with the updated rendering algorithm, use the following command:
