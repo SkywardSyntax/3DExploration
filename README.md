@@ -8,27 +8,20 @@ Everything you do here is contained within this one codespace. There is no repos
 
 ## Changes in Rendering Algorithm
 
-The rendering algorithm in `components/WebGLRenderer.js` has been updated to include more realistic rendering techniques. The following changes have been made:
+The rendering algorithm in `components/WebGLRenderer.js` has been updated to optimize GPU load. The following changes have been made:
 
-- Implemented bump mapping in vertex and fragment shaders.
-- Utilized retracting for dynamic vertex positions.
-- Modified procedural vertex normal calculations for roughness.
-- Added more complex shaders to increase GPU load.
-- Introduced particle systems to increase GPU load.
-- Increased resolution and complexity of object textures.
-- Utilized shadow mapping or environment mapping to increase GPU load.
+- Simplified vertex and fragment shaders by removing bump mapping and normal mapping.
+- Reduced the number of particles in the particle system to 500.
+- Simplified particle color calculations by using a single color for all particles.
+- Removed shadow mapping and environment mapping.
 
-## Bump Mapping and Roughness
+## Simplified Shaders
 
-Bump mapping has been added to the vertex and fragment shaders to create more realistic surface details. This technique simulates small-scale bumps and wrinkles on the surface of the pyramid, giving it a rough appearance.
+The vertex and fragment shaders have been simplified to reduce GPU load. Bump mapping and normal mapping have been removed to decrease the complexity of the shaders.
 
-### Bump Mapping Techniques
+## Optimized Particle System
 
-Bump mapping is a technique used to simulate bumps and wrinkles on the surface of an object. It uses a texture (bump map) to perturb the surface normals of the object, creating the illusion of depth and detail. The bump map is a grayscale image where the intensity of each pixel represents the height of the bump at that point.
-
-### Normal Mapping Techniques
-
-Normal mapping is a more advanced technique that uses a texture (normal map) to store normal vectors instead of height values. This allows for more detailed and accurate surface details. The normal map is usually created from a high-resolution model and applied to a low-resolution model to give the appearance of high detail without the computational cost.
+The particle system has been optimized by reducing the number of particles to 500 and simplifying the particle color calculations. All particles now use a single color, which reduces the computational load on the GPU.
 
 ## Instructions for Running the Updated Code
 

@@ -63,11 +63,3 @@ button {
 button:hover {
   background-color: #45a049;
 }
-
-.pyramid {
-  filter: brightness(1.2) contrast(1.1);
-}
-
-.pyramid-roughness {
-  filter: blur(0.5px);
-}
