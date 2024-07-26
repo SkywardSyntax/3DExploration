@@ -1,8 +1,11 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import * as THREE from 'three';
+import Cube from './Cube';
+import Slider from './Slider';
 
 function WebGLRenderer() {
   const canvasRef = useRef(null);
+  const [rotationSpeed, setRotationSpeed] = useState(0.01);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -20,6 +23,12 @@ function WebGLRenderer() {
     const sphere = new THREE.Mesh(geometry, material);
     scene.add(sphere);
 
+    const cubeGeometry = new THREE.BoxGeometry();
+    const cubeMaterial = new THREE.MeshStandardMaterial({ color: 0x0000ff });
+    const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+    cube.position.x = 2;
+    scene.add(cube);
+
     const ambientLight = new THREE.AmbientLight(0x404040);
     scene.add(ambientLight);
 
@@ -30,8 +39,11 @@ function WebGLRenderer() {
     function animate() {
       requestAnimationFrame(animate);
 
-      sphere.rotation.x += 0.01;
-      sphere.rotation.y += 0.01;
+      sphere.rotation.x += rotationSpeed;
+      sphere.rotation.y += rotationSpeed;
+
+      cube.rotation.x += rotationSpeed;
+      cube.rotation.y += rotationSpeed;
 
       renderer.render(scene, camera);
     }
@@ -51,9 +63,18 @@ function WebGLRenderer() {
     return () => {
       window.removeEventListener('resize', handleResize);
     };
-  }, []);
+  }, [rotationSpeed]);
 
-  return <canvas ref={canvasRef} style={{ display: 'block', margin: 'auto', position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }} />;
+  const handleSliderChange = (event) => {
+    setRotationSpeed(parseFloat(event.target.value));
+  };
+
+  return (
+    <>
+      <canvas ref={canvasRef} style={{ display: 'block', margin: 'auto', position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }} />
+      <Slider value={rotationSpeed} onChange={handleSliderChange} />
+    </>
+  );
 }
 
 export default WebGLRenderer;

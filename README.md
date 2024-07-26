@@ -16,6 +16,20 @@ The rendering logic in `components/WebGLRenderer.js` has been updated to use thr
 - Centered the sphere on the viewport.
 - Set the background color to black.
 
+## New Cube and Slider Components
+
+The application has been updated to include a new `Cube` component and a `Slider` component. The following changes have been made:
+
+- Added a new `Cube` component in `components/Cube.js` to render a rotating cube with a different color.
+- Updated `WebGLRenderer.js` to include the new `Cube` component alongside the existing sphere.
+- Added a new `Slider` component in `components/Slider.js` to control the rotation speed of the sphere and cube.
+- Updated `WebGLRenderer.js` to include the new `Slider` component and handle its value to adjust the rotation speed of the sphere and cube.
+- Updated `global.css` to style the new `Slider` component.
+
+## Instructions for Using the Slider
+
+To control the rotation speed of the sphere and cube, use the slider located below the canvas. The slider ranges from 0 to 0.1. Adjust the slider to change the rotation speed of the objects in the scene.
+
 ## Instructions for Running the Updated Code
 
 To run this application with the updated rendering logic, use the following command:
