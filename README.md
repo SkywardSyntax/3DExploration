@@ -37,3 +37,27 @@ To run this application with the updated rendering logic, use the following comm
 ```
 npm run dev
 ```
+
+## Sophisticated Shaders
+
+The application has been enhanced with sophisticated shaders for both the cube and the sphere. The following changes have been made:
+
+- Updated `components/Cube.js` to use `THREE.ShaderMaterial` with custom vertex and fragment shaders for the cube.
+- Updated `components/WebGLRenderer.js` to use `THREE.ShaderMaterial` with custom vertex and fragment shaders for the sphere.
+- Added custom vertex and fragment shader code to `components/Cube.js` and `components/WebGLRenderer.js` to include lighting and color effects.
+
+### Effects and Benefits of Custom Shaders
+
+The custom shaders provide the following effects and benefits:
+
+- Enhanced lighting effects: The shaders include advanced lighting calculations that provide more realistic and dynamic lighting effects on the objects.
+- Improved color effects: The shaders allow for more sophisticated color manipulation, resulting in more vibrant and visually appealing objects.
+- Greater control over rendering: The use of custom shaders provides greater control over the rendering process, allowing for more fine-tuned and customized visual effects.
+
+### Running the Application with Sophisticated Shaders
+
+To run the application with the new sophisticated shaders, use the following command:
+
+```
+npm run dev
+```

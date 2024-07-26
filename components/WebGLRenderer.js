@@ -3,6 +3,23 @@ import * as THREE from 'three';
 import Cube from './Cube';
 import Slider from './Slider';
 
+const vertexShader = `
+  varying vec3 vNormal;
+  void main() {
+    vNormal = normalize(normalMatrix * normal);
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+
+const fragmentShader = `
+  uniform vec3 color;
+  varying vec3 vNormal;
+  void main() {
+    float intensity = pow(0.9 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 2.0);
+    gl_FragColor = vec4(color * intensity, 1.0);
+  }
+`;
+
 function WebGLRenderer() {
   const canvasRef = useRef(null);
   const [rotationSpeed, setRotationSpeed] = useState(0.01);
@@ -19,7 +36,13 @@ function WebGLRenderer() {
     camera.position.z = 5;
 
     const geometry = new THREE.SphereGeometry(1, 32, 32);
-    const material = new THREE.MeshStandardMaterial({ color: 0xd3d3d3 });
+    const material = new THREE.ShaderMaterial({
+      vertexShader,
+      fragmentShader,
+      uniforms: {
+        color: { value: new THREE.Color(0xd3d3d3) }
+      }
+    });
     const sphere = new THREE.Mesh(geometry, material);
     scene.add(sphere);
 
