@@ -6,26 +6,19 @@ You've got a blank canvas to work on from a git perspective as well. There's a s
 
 Everything you do here is contained within this one codespace. There is no repository on GitHub yet. If and when you’re ready you can click "Publish Branch" and we’ll create your repository and push up your project. If you were just exploring then and have no further need for this code then you can simply delete your codespace and it's gone forever.
 
-## Changes in Rendering Algorithm
+## Using three.js for Rendering
 
-The rendering algorithm in `components/WebGLRenderer.js` has been updated to optimize GPU load. The following changes have been made:
+The rendering logic in `components/WebGLRenderer.js` has been updated to use three.js for rendering a rotating light grey sphere with lighting. The following changes have been made:
 
-- Simplified vertex and fragment shaders by removing bump mapping and normal mapping.
-- Reduced the number of particles in the particle system to 500.
-- Simplified particle color calculations by using a single color for all particles.
-- Removed shadow mapping and environment mapping.
-
-## Simplified Shaders
-
-The vertex and fragment shaders have been simplified to reduce GPU load. Bump mapping and normal mapping have been removed to decrease the complexity of the shaders.
-
-## Optimized Particle System
-
-The particle system has been optimized by reducing the number of particles to 500 and simplifying the particle color calculations. All particles now use a single color, which reduces the computational load on the GPU.
+- Replaced WebGL rendering logic with three.js rendering logic.
+- Updated the `WebGLRenderer` component to use three.js.
+- Added a light grey sphere with lighting.
+- Centered the sphere on the viewport.
+- Set the background color to black.
 
 ## Instructions for Running the Updated Code
 
-To run this application with the updated rendering algorithm, use the following command:
+To run this application with the updated rendering logic, use the following command:
 
 ```
 npm run dev
