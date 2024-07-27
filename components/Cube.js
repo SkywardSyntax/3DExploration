@@ -4,10 +4,14 @@ import * as THREE from 'three';
 const vertexShader = `
   varying vec3 vNormal;
   varying vec3 vViewPosition;
+  varying vec3 vLightDirection;
+  varying vec3 vReflectDirection;
   void main() {
     vNormal = normalize(normalMatrix * normal);
     vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
     vViewPosition = -mvPosition.xyz;
+    vLightDirection = normalize(vec3(5.0, 5.0, 5.0) - vViewPosition);
+    vReflectDirection = reflect(-vLightDirection, vNormal);
     gl_Position = projectionMatrix * mvPosition;
   }
 `;
@@ -17,12 +21,15 @@ const fragmentShader = `
   uniform vec3 lightPosition;
   varying vec3 vNormal;
   varying vec3 vViewPosition;
+  varying vec3 vLightDirection;
+  varying vec3 vReflectDirection;
   void main() {
-    vec3 lightDirection = normalize(lightPosition - vViewPosition);
-    float intensity = max(dot(vNormal, lightDirection), 0.0);
-    vec3 reflection = reflect(-lightDirection, vNormal);
-    float specular = pow(max(dot(reflection, normalize(vViewPosition)), 0.0), 16.0);
-    gl_FragColor = vec4(color * intensity + vec3(1.0) * specular, 1.0);
+    float intensity = max(dot(vNormal, vLightDirection), 0.0);
+    float specular = pow(max(dot(vReflectDirection, normalize(vViewPosition)), 0.0), 32.0);
+    vec3 ambient = 0.1 * color;
+    vec3 diffuse = intensity * color;
+    vec3 specularColor = vec3(1.0) * specular;
+    gl_FragColor = vec4(ambient + diffuse + specularColor, 1.0);
   }
 `;
 
