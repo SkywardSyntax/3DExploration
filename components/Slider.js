@@ -4,9 +4,9 @@ function Slider({ value, onChange }) {
   return (
     <input
       type="range"
-      min="0"
-      max="0.1"
-      step="0.001"
+      min="0.1"
+      max="2"
+      step="0.1"
       value={value}
       onChange={onChange}
     />

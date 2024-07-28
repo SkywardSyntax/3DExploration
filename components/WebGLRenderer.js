@@ -38,6 +38,7 @@ const fragmentShader = `
 function WebGLRenderer() {
   const canvasRef = useRef(null);
   const [rotationSpeed, setRotationSpeed] = useState(0.01);
+  const [zoomLevel, setZoomLevel] = useState(1);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -51,6 +52,14 @@ function WebGLRenderer() {
     camera.position.z = 5;
 
     const geometry = new THREE.SphereGeometry(1, 32, 32);
+    // Introduce randomness in the vertices to create a rough surface
+    for (let i = 0; i < geometry.vertices.length; i++) {
+      geometry.vertices[i].x += (Math.random() - 0.5) * 0.1;
+      geometry.vertices[i].y += (Math.random() - 0.5) * 0.1;
+      geometry.vertices[i].z += (Math.random() - 0.5) * 0.1;
+    }
+    geometry.verticesNeedUpdate = true;
+
     const material = new THREE.ShaderMaterial({
       vertexShader,
       fragmentShader,
@@ -84,6 +93,10 @@ function WebGLRenderer() {
       cube.rotation.x += rotationSpeed;
       cube.rotation.y += rotationSpeed;
 
+      camera.fov = 75 / zoomLevel;
+      camera.position.z = 5 / zoomLevel;
+      camera.updateProjectionMatrix();
+
       renderer.render(scene, camera);
     }
 
@@ -99,10 +112,19 @@ function WebGLRenderer() {
 
     window.addEventListener('resize', handleResize);
 
+    const handleWheel = (event) => {
+      setZoomLevel((prevZoomLevel) => Math.max(0.1, prevZoomLevel + event.deltaY * 0.001));
+      sphere.position.set(0, 0, 0);
+      cube.position.set(2, 0, 0);
+    };
+
+    window.addEventListener('wheel', handleWheel);
+
     return () => {
       window.removeEventListener('resize', handleResize);
+      window.removeEventListener('wheel', handleWheel);
     };
-  }, [rotationSpeed]);
+  }, [rotationSpeed, zoomLevel]);
 
   const handleSliderChange = (event) => {
     setRotationSpeed(parseFloat(event.target.value));

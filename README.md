@@ -69,6 +69,13 @@ The new shader effects include the following advanced features:
 - **Reflection Calculations**: The fragment shaders now include advanced reflection calculations, simulating the way light reflects off the surfaces of the objects. This adds a layer of realism to the rendering, making the objects appear more lifelike.
 - **Specular Highlights**: The shaders now include calculations for specular highlights, which are the bright spots of light that appear on shiny surfaces. This enhances the visual appeal of the objects, making them look more polished and realistic.
 
+### Rough and Randomly Spread Out Sphere Surface
+
+The sphere in the application has been updated to have a rough and randomly spread out surface. The following changes have been made:
+
+- Modified the `SphereGeometry` in `components/WebGLRenderer.js` to introduce randomness in the vertices, creating a rough surface.
+- Updated the `WebGLRenderer` component to apply the modified `SphereGeometry` to the sphere.
+
 ### Running the Application with Advanced Shader Effects
 
 To run the application with the new advanced shader effects, use the following command:
