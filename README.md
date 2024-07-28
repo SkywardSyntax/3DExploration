@@ -129,3 +129,25 @@ To run the application with the srustim culling function, use the following comm
 ```
 npm run dev
 ```
+
+## Use of Factorial in Shaders
+
+The application has been updated to include the use of factorial calculations in the shaders for both the cube and the sphere. The following changes have been made:
+
+- Updated `components/Cube.js` to include factorial calculations in the vertex and fragment shaders.
+- Updated `components/WebGLRenderer.js` to include factorial calculations in the vertex and fragment shaders.
+
+### Effects and Benefits of Using Factorial in Shaders
+
+The use of factorial calculations in the shaders provides the following effects and benefits:
+
+- **Enhanced Mathematical Complexity**: The shaders now include factorial calculations, adding a layer of mathematical complexity to the rendering process.
+- **Unique Visual Effects**: The use of factorial calculations can result in unique and interesting visual effects, making the objects in the scene more visually appealing.
+
+### Running the Application with Factorial Calculations in Shaders
+
+To run the application with the factorial calculations in the shaders, use the following command:
+
+```
+npm run dev
+```

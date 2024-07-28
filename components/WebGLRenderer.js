@@ -10,6 +10,17 @@ const vertexShader = `
   varying vec3 vReflectDirection;
   varying vec2 vUv;
   uniform sampler2D normalMap;
+
+  // Function to calculate factorial
+  float factorial(int n) {
+    if (n == 0) return 1.0;
+    float result = 1.0;
+    for (int i = 1; i <= n; ++i) {
+      result *= float(i);
+    }
+    return result;
+  }
+
   void main() {
     vNormal = normalize(normalMatrix * normal);
     vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
@@ -17,7 +28,10 @@ const vertexShader = `
     vLightDirection = normalize(vec3(5.0, 5.0, 5.0) - vViewPosition);
     vReflectDirection = reflect(-vLightDirection, vNormal);
     vUv = uv;
-    gl_Position = projectionMatrix * mvPosition;
+
+    // Use factorial in some calculation
+    float factValue = factorial(5);
+    gl_Position = projectionMatrix * mvPosition * factValue;
   }
 `;
 
@@ -30,6 +44,17 @@ const fragmentShader = `
   varying vec3 vLightDirection;
   varying vec3 vReflectDirection;
   varying vec2 vUv;
+
+  // Function to calculate factorial
+  float factorial(int n) {
+    if (n == 0) return 1.0;
+    float result = 1.0;
+    for (int i = 1; i <= n; ++i) {
+      result *= float(i);
+    }
+    return result;
+  }
+
   void main() {
     vec3 normal = texture2D(normalMap, vUv).rgb;
     normal = normalize(normal * 2.0 - 1.0);
@@ -38,7 +63,10 @@ const fragmentShader = `
     vec3 ambient = 0.1 * color;
     vec3 diffuse = intensity * color;
     vec3 specularColor = vec3(1.0) * specular;
-    gl_FragColor = vec4(ambient + diffuse + specularColor, 1.0);
+
+    // Use factorial in some calculation
+    float factValue = factorial(3);
+    gl_FragColor = vec4((ambient + diffuse + specularColor) * factValue, 1.0);
   }
 `;
 
