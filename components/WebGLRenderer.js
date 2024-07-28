@@ -153,6 +153,20 @@ function WebGLRenderer() {
     cube.position.x = 2;
     scene.add(cube);
 
+    // Add a new IrregularObject component
+    const irregularGeometry = new THREE.SphereGeometry(1, 32, 32);
+    for (let i = 0; i < irregularGeometry.vertices.length; i++) {
+      irregularGeometry.vertices[i].x += (Math.random() - 0.5) * 0.2;
+      irregularGeometry.vertices[i].y += (Math.random() - 0.5) * 0.2;
+      irregularGeometry.vertices[i].z += (Math.random() - 0.5) * 0.2;
+    }
+    irregularGeometry.verticesNeedUpdate = true;
+
+    const irregularMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+    const irregularObject = new THREE.Mesh(irregularGeometry, irregularMaterial);
+    irregularObject.position.x = -2; // Position the irregular object to the left of the sphere
+    scene.add(irregularObject);
+
     const ambientLight = new THREE.AmbientLight(0x404040);
     scene.add(ambientLight);
 
@@ -168,6 +182,9 @@ function WebGLRenderer() {
 
       cube.rotation.x += rotationSpeed;
       cube.rotation.y += rotationSpeed;
+
+      irregularObject.rotation.x += rotationSpeed;
+      irregularObject.rotation.y += rotationSpeed;
 
       camera.fov = 75 / zoomLevel;
       camera.position.z = 5 / zoomLevel;
@@ -192,6 +209,7 @@ function WebGLRenderer() {
       setZoomLevel((prevZoomLevel) => Math.max(0.1, prevZoomLevel + event.deltaY * 0.001));
       sphere.position.set(0, 0, 0);
       cube.position.set(2, 0, 0);
+      irregularObject.position.set(-2, 0, 0);
     };
 
     window.addEventListener('wheel', handleWheel);
