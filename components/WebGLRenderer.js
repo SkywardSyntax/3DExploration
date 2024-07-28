@@ -91,12 +91,14 @@ function WebGLRenderer() {
 
     const geometry = new THREE.SphereGeometry(1, 32, 32);
     // Introduce randomness in the vertices to create a rough surface
-    for (let i = 0; i < geometry.vertices.length; i++) {
-      geometry.vertices[i].x += (Math.random() - 0.5) * 0.1;
-      geometry.vertices[i].y += (Math.random() - 0.5) * 0.1;
-      geometry.vertices[i].z += (Math.random() - 0.5) * 0.1;
+    if (geometry.vertices) {
+      for (let i = 0; i < geometry.vertices.length; i++) {
+        geometry.vertices[i].x += (Math.random() - 0.5) * 0.1;
+        geometry.vertices[i].y += (Math.random() - 0.5) * 0.1;
+        geometry.vertices[i].z += (Math.random() - 0.5) * 0.1;
+      }
+      geometry.verticesNeedUpdate = true;
     }
-    geometry.verticesNeedUpdate = true;
 
     const material = new THREE.ShaderMaterial({
       vertexShader,
