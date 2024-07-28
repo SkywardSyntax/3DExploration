@@ -3,13 +3,15 @@
   "scripts": {
     "dev": "next",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "deploy": "next build && next export && touch out/.nojekyll && gh-pages -d out"
   },
   "dependencies": {
     "gl-matrix": "^3.4.3",
     "next": "^14.1.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "three": "^0.132.2"
+    "three": "^0.132.2",
+    "gh-pages": "^4.0.0"
   }
 }
