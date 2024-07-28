@@ -72,6 +72,8 @@ const fragmentShader = `
   uniform vec3 color;
   uniform vec3 lightPosition;
   uniform sampler2D normalMap;
+  uniform float dotSize;
+  uniform float dotSpacing;
   varying vec3 vNormal;
   varying vec3 vViewPosition;
   varying vec3 vLightDirection;
@@ -132,7 +134,14 @@ const fragmentShader = `
     // Use 3D transformation in some calculation
     vec3 transformedPosition = transform3D(vViewPosition, transformationMatrix);
 
-    gl_FragColor = vec4((ambient + diffuse + specularColor) * factValue * sineValue * cosineValue, 1.0);
+    // Calculate red polka dots
+    vec2 uv = vUv * dotSpacing;
+    vec2 grid = fract(uv) - 0.5;
+    float dist = length(grid);
+    float dot = smoothstep(dotSize, dotSize - 0.01, dist);
+    vec3 polkaDotColor = mix(vec3(1.0, 0.0, 0.0), vec3(1.0), dot);
+
+    gl_FragColor = vec4((ambient + diffuse + specularColor) * factValue * sineValue * cosineValue * polkaDotColor, 1.0);
   }
 `;
 
@@ -172,7 +181,9 @@ function WebGLRenderer() {
       uniforms: {
         color: { value: new THREE.Color(0xd3d3d3) },
         lightPosition: { value: new THREE.Vector3(5, 5, 5) },
-        normalMap: { value: normalMap }
+        normalMap: { value: normalMap },
+        dotSize: { value: 0.1 },
+        dotSpacing: { value: 10.0 }
       }
     });
     const sphere = new THREE.Mesh(geometry, material);
@@ -186,12 +197,16 @@ function WebGLRenderer() {
 
     // Add a new IrregularObject component
     const irregularGeometry = new THREE.SphereGeometry(1, 32, 32);
-    for (let i = 0; i < irregularGeometry.vertices.length; i++) {
-      irregularGeometry.vertices[i].x += (Math.random() - 0.5) * 0.2;
-      irregularGeometry.vertices[i].y += (Math.random() - 0.5) * 0.2;
-      irregularGeometry.vertices[i].z += (Math.random() - 0.5) * 0.2;
+    if (irregularGeometry.vertices) {
+      for (let i = 0; i < irregularGeometry.vertices.length; i++) {
+        irregularGeometry.vertices[i].x += (Math.random() - 0.5) * 0.2;
+        irregularGeometry.vertices[i].y += (Math.random() - 0.5) * 0.2;
+        irregularGeometry.vertices[i].z += (Math.random() - 0.5) * 0.2;
+      }
+      irregularGeometry.verticesNeedUpdate = true;
+    } else {
+      console.warn('irregularGeometry.vertices is undefined. Skipping vertex adjustments.');
     }
-    irregularGeometry.verticesNeedUpdate = true;
 
     const irregularMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
     const irregularObject = new THREE.Mesh(irregularGeometry, irregularMaterial);
