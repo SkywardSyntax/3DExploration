@@ -26,9 +26,19 @@ const vertexShader = `
     return sin(angle);
   }
 
+  // Function to calculate cosine of an angle
+  float cosine(float angle) {
+    return cos(angle);
+  }
+
   // Function to perform matrix multiplication
   mat4 matrixMultiply(mat4 a, mat4 b) {
     return a * b;
+  }
+
+  // Function to perform 3D transformation
+  vec3 transform3D(vec3 position, mat4 transformationMatrix) {
+    return (transformationMatrix * vec4(position, 1.0)).xyz;
   }
 
   void main() {
@@ -45,10 +55,16 @@ const vertexShader = `
     // Use sine function in some calculation
     float sineValue = sine(position.x);
 
+    // Use cosine function in some calculation
+    float cosineValue = cosine(position.y);
+
     // Use matrix multiplication in some calculation
     mat4 transformationMatrix = matrixMultiply(modelViewMatrix, projectionMatrix);
 
-    gl_Position = transformationMatrix * mvPosition * factValue * sineValue;
+    // Use 3D transformation in some calculation
+    vec3 transformedPosition = transform3D(position, transformationMatrix);
+
+    gl_Position = transformationMatrix * mvPosition * factValue * sineValue * cosineValue;
   }
 `;
 
@@ -72,9 +88,19 @@ const fragmentShader = `
     return result;
   }
 
+  // Function to calculate sine of an angle
+  float sine(float angle) {
+    return sin(angle);
+  }
+
   // Function to calculate cosine of an angle
   float cosine(float angle) {
     return cos(angle);
+  }
+
+  // Function to perform matrix multiplication
+  mat4 matrixMultiply(mat4 a, mat4 b) {
+    return a * b;
   }
 
   // Function to perform 3D transformation
@@ -94,14 +120,19 @@ const fragmentShader = `
     // Use factorial in some calculation
     float factValue = factorial(3);
 
+    // Use sine function in some calculation
+    float sineValue = sine(vViewPosition.x);
+
     // Use cosine function in some calculation
-    float cosineValue = cosine(vViewPosition.x);
+    float cosineValue = cosine(vViewPosition.y);
+
+    // Use matrix multiplication in some calculation
+    mat4 transformationMatrix = mat4(1.0);
 
     // Use 3D transformation in some calculation
-    mat4 transformationMatrix = mat4(1.0);
     vec3 transformedPosition = transform3D(vViewPosition, transformationMatrix);
 
-    gl_FragColor = vec4((ambient + diffuse + specularColor) * factValue * cosineValue, 1.0);
+    gl_FragColor = vec4((ambient + diffuse + specularColor) * factValue * sineValue * cosineValue, 1.0);
   }
 `;
 
