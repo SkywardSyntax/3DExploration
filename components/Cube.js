@@ -19,6 +19,16 @@ const vertexShader = `
     return result;
   }
 
+  // Function to calculate sine of an angle
+  float sine(float angle) {
+    return sin(angle);
+  }
+
+  // Function to perform matrix multiplication
+  mat4 matrixMultiply(mat4 a, mat4 b) {
+    return a * b;
+  }
+
   void main() {
     vNormal = normalize(normalMatrix * normal);
     vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
@@ -29,7 +39,14 @@ const vertexShader = `
 
     // Use factorial in some calculation
     float factValue = factorial(5);
-    gl_Position = projectionMatrix * mvPosition * factValue;
+
+    // Use sine function in some calculation
+    float sineValue = sine(position.x);
+
+    // Use matrix multiplication in some calculation
+    mat4 transformationMatrix = matrixMultiply(modelViewMatrix, projectionMatrix);
+
+    gl_Position = transformationMatrix * mvPosition * factValue * sineValue;
   }
 `;
 
@@ -53,6 +70,16 @@ const fragmentShader = `
     return result;
   }
 
+  // Function to calculate cosine of an angle
+  float cosine(float angle) {
+    return cos(angle);
+  }
+
+  // Function to perform 3D transformation
+  vec3 transform3D(vec3 position, mat4 transformationMatrix) {
+    return (transformationMatrix * vec4(position, 1.0)).xyz;
+  }
+
   void main() {
     vec3 normal = texture2D(normalMap, vUv).rgb;
     normal = normalize(normal * 2.0 - 1.0);
@@ -64,7 +91,15 @@ const fragmentShader = `
 
     // Use factorial in some calculation
     float factValue = factorial(3);
-    gl_FragColor = vec4((ambient + diffuse + specularColor) * factValue, 1.0);
+
+    // Use cosine function in some calculation
+    float cosineValue = cosine(vViewPosition.x);
+
+    // Use 3D transformation in some calculation
+    mat4 transformationMatrix = mat4(1.0);
+    vec3 transformedPosition = transform3D(vViewPosition, transformationMatrix);
+
+    gl_FragColor = vec4((ambient + diffuse + specularColor) * factValue * cosineValue, 1.0);
   }
 `;
 
