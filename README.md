@@ -83,3 +83,49 @@ To run the application with the new advanced shader effects, use the following c
 ```
 npm run dev
 ```
+
+## Increased Shader Complexity
+
+The application has been further enhanced with increased shader complexity for both the cube and the sphere. The following changes have been made:
+
+- Updated `components/Cube.js` to include normal mapping and physical-based rendering (PBR) techniques in the vertex and fragment shaders.
+- Updated `components/WebGLRenderer.js` to include normal mapping and physical-based rendering (PBR) techniques in the vertex and fragment shaders.
+- Added uniforms for normal map textures in both `components/Cube.js` and `components/WebGLRenderer.js`.
+- Modified `useEffect` hooks in both `components/Cube.js` and `components/WebGLRenderer.js` to load and set normal map textures.
+- Updated shader calculations to use normal mapping and PBR techniques.
+
+### Effects and Benefits of Increased Shader Complexity
+
+The increased shader complexity provides the following effects and benefits:
+
+- **Normal Mapping**: The shaders now include normal mapping techniques, which add detailed surface textures to the objects without increasing the polygon count. This results in more realistic and detailed surfaces.
+- **Physical-Based Rendering (PBR)**: The shaders now use physical-based rendering techniques, which simulate the way light interacts with materials in a more realistic manner. This results in more lifelike and visually appealing objects.
+
+### Running the Application with Increased Shader Complexity
+
+To run the application with the increased shader complexity, use the following command:
+
+```
+npm run dev
+```
+
+## Sophisticated Srustim Culling Function
+
+The application has been enhanced with a sophisticated srustim culling function to improve performance. The following changes have been made:
+
+- Implemented a srustim culling function in `components/WebGLRenderer.js` to efficiently cull objects outside the camera's view.
+
+### Effects and Benefits of the Srustim Culling Function
+
+The srustim culling function provides the following effects and benefits:
+
+- **Improved Performance**: By culling objects outside the camera's view, the rendering performance is significantly improved. This results in smoother and more efficient rendering.
+- **Efficient Resource Usage**: The culling function ensures that only visible objects are rendered, reducing the computational load and resource usage.
+
+### Running the Application with the Srustim Culling Function
+
+To run the application with the srustim culling function, use the following command:
+
+```
+npm run dev
+```

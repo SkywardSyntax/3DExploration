@@ -8,12 +8,15 @@ const vertexShader = `
   varying vec3 vViewPosition;
   varying vec3 vLightDirection;
   varying vec3 vReflectDirection;
+  varying vec2 vUv;
+  uniform sampler2D normalMap;
   void main() {
     vNormal = normalize(normalMatrix * normal);
     vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
     vViewPosition = -mvPosition.xyz;
     vLightDirection = normalize(vec3(5.0, 5.0, 5.0) - vViewPosition);
     vReflectDirection = reflect(-vLightDirection, vNormal);
+    vUv = uv;
     gl_Position = projectionMatrix * mvPosition;
   }
 `;
@@ -21,12 +24,16 @@ const vertexShader = `
 const fragmentShader = `
   uniform vec3 color;
   uniform vec3 lightPosition;
+  uniform sampler2D normalMap;
   varying vec3 vNormal;
   varying vec3 vViewPosition;
   varying vec3 vLightDirection;
   varying vec3 vReflectDirection;
+  varying vec2 vUv;
   void main() {
-    float intensity = max(dot(vNormal, vLightDirection), 0.0);
+    vec3 normal = texture2D(normalMap, vUv).rgb;
+    normal = normalize(normal * 2.0 - 1.0);
+    float intensity = max(dot(normal, vLightDirection), 0.0);
     float specular = pow(max(dot(vReflectDirection, normalize(vViewPosition)), 0.0), 32.0);
     vec3 ambient = 0.1 * color;
     vec3 diffuse = intensity * color;
@@ -51,6 +58,9 @@ function WebGLRenderer() {
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     camera.position.z = 5;
 
+    const loader = new THREE.TextureLoader();
+    const normalMap = loader.load('/path/to/normalMap.png');
+
     const geometry = new THREE.SphereGeometry(1, 32, 32);
     // Introduce randomness in the vertices to create a rough surface
     for (let i = 0; i < geometry.vertices.length; i++) {
@@ -65,7 +75,8 @@ function WebGLRenderer() {
       fragmentShader,
       uniforms: {
         color: { value: new THREE.Color(0xd3d3d3) },
-        lightPosition: { value: new THREE.Vector3(5, 5, 5) }
+        lightPosition: { value: new THREE.Vector3(5, 5, 5) },
+        normalMap: { value: normalMap }
       }
     });
     const sphere = new THREE.Mesh(geometry, material);
