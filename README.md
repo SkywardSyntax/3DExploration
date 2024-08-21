@@ -151,3 +151,6 @@ To run the application with the factorial calculations in the shaders, use the f
 ```
 npm run dev
 ```
+
+## Demo
+![demo](demo.png)
