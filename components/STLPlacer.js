@@ -13,19 +13,32 @@ function STLPlacer({ scene, onModelLoaded }) {
   // Handle STL file upload
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
-    if (file && file.name.toLowerCase().endsWith('.stl')) {
-      setIsLoading(true);
-      const reader = new FileReader();
-      
-      reader.onload = (e) => {
-        const arrayBuffer = e.target.result;
-        loadSTLFromBuffer(arrayBuffer, file.name);
-      };
-      
-      reader.readAsArrayBuffer(file);
-    } else {
-      alert('Please select a valid STL file');
+    if (!file) return;
+    
+    if (!file.name.toLowerCase().endsWith('.stl')) {
+      alert('Please select a valid STL file (.stl extension required)');
+      return;
     }
+    
+    if (file.size > 10 * 1024 * 1024) { // 10MB limit
+      alert('File size too large. Please select a file smaller than 10MB.');
+      return;
+    }
+    
+    setIsLoading(true);
+    const reader = new FileReader();
+    
+    reader.onload = (e) => {
+      const arrayBuffer = e.target.result;
+      loadSTLFromBuffer(arrayBuffer, file.name);
+    };
+    
+    reader.onerror = () => {
+      setIsLoading(false);
+      alert('Error reading file. Please try again.');
+    };
+    
+    reader.readAsArrayBuffer(file);
   };
 
   // Load STL from buffer
@@ -116,12 +129,12 @@ function STLPlacer({ scene, onModelLoaded }) {
   const removeModel = () => {
     if (stlModel && scene) {
       scene.remove(stlModel);
-      setStlModel(null);
-      // Reset controls to default values
-      setModelScale(1);
-      setModelPosition({ x: 0, y: 0, z: 0 });
-      setModelRotation({ x: 0, y: 0, z: 0 });
     }
+    // Always reset state regardless of scene removal
+    setStlModel(null);
+    setModelScale(1);
+    setModelPosition({ x: 0, y: 0, z: 0 });
+    setModelRotation({ x: 0, y: 0, z: 0 });
   };
 
   return (
@@ -140,6 +153,19 @@ function STLPlacer({ scene, onModelLoaded }) {
       zIndex: 1000
     }}>
       <h3 style={{ margin: '0 0 15px 0', fontSize: '16px' }}>STL Placer</h3>
+      
+      {/* Instructions */}
+      {!stlModel && !isLoading && (
+        <div style={{ 
+          marginBottom: '15px', 
+          fontSize: '12px', 
+          color: '#ccc',
+          lineHeight: '1.4'
+        }}>
+          Upload an STL file to preview and position it in the 3D scene. 
+          Supports files up to 10MB.
+        </div>
+      )}
       
       {/* File Upload */}
       <div style={{ marginBottom: '15px' }}>
