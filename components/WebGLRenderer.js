@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState } from 'react';
 import * as THREE from 'three';
 import Cube from './Cube';
 import Slider from './Slider';
+import STLPlacer from './STLPlacer';
 
 const vertexShader = `
   varying vec3 vNormal;
@@ -147,6 +148,7 @@ const fragmentShader = `
 
 function WebGLRenderer() {
   const canvasRef = useRef(null);
+  const sceneRef = useRef(null);
   const [rotationSpeed, setRotationSpeed] = useState(0.01);
   const [zoomLevel, setZoomLevel] = useState(1);
 
@@ -157,6 +159,7 @@ function WebGLRenderer() {
     renderer.setClearColor(0x000000, 1);
 
     const scene = new THREE.Scene();
+    sceneRef.current = scene;
 
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     camera.position.z = 5;
@@ -270,9 +273,14 @@ function WebGLRenderer() {
     setRotationSpeed(parseFloat(event.target.value));
   };
 
+  const handleModelLoaded = (model) => {
+    console.log('STL model loaded:', model);
+  };
+
   return (
     <>
       <canvas ref={canvasRef} style={{ display: 'block', margin: 'auto', position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }} />
+      <STLPlacer scene={sceneRef.current} onModelLoaded={handleModelLoaded} />
       <Slider value={rotationSpeed} onChange={handleSliderChange} />
     </>
   );
